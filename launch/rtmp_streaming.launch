@@ -1,0 +1,6 @@
+<launch>
+    <node name="rtmp_streaming" pkg ="rtmp_ros" type="rtmp_ros" output="screen">
+        <param name="rtmp_address" value="rtmp://172.16.0.100:1935/live"/>
+    </node>
+
+</launch>
