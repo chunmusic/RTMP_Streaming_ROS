@@ -14,37 +14,45 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "rtmp_streaming");
 
-    ros::NodeHandle nh();
+    ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
 
+    cv::Mat frame;
+    sensor_msgs::ImagePtr msg;
+    cv::VideoCapture cap;
     
-
     std::string rtmp_address;
     pnh.getParam("rtmp_address", rtmp_address);
 
-    image_transport::ImageTransport it;
-    image_transport::Publisher pub;
+    std::cout << "rtmp_address: " << rtmp_address << std::endl;
 
-    image_pub = it.advertise("/rtmp_streamping/raw",1)
-
-    cv::Mat img;
-    cv::VideoCapture cap;
+    image_transport::ImageTransport it(nh);
+    image_transport::Publisher image_pub = it.advertise("rtmp_streamping/raw",1);
 
     ROS_INFO("print");
     ROS_INFO("Got param: %s", rtmp_address.c_str());
     // cap.open(rtmp_address); //For rtmp streaming purpose.
-    cap.open(0);
+    cap.open(rtmp_address,cv::CAP_ANY);
+    cap.set(cv::CAP_PROP_FPS,30);
+
+    if(!cap.isOpened()){
+        std::cerr << "ERROR! Unable to open camera \n" << std::endl;
+        return -1;
+    }
+
+    ros::Rate loop_rate(100);
 
     while(cap.isOpened()){
 
-        cap.read(img);
-        cv::imshow("img",img);
+        cap >> frame;
 
-        image_pub.publist(img);
-
-        if(cv::waitKey(1) || ord('q')){
-            break;
+        if(!frame.empty()) {
+            msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", frame).toImageMsg();
+            image_pub.publish(msg);
         }
+
+        ros::spinOnce();
+        loop_rate.sleep();
 
     }
 
