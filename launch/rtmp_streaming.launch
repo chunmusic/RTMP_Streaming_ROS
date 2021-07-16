@@ -1,6 +1,8 @@
 <launch>
     <node name="rtmp_streaming" pkg ="rtmp_ros" type="rtmp_ros" output="screen">
         <param name="rtmp_address" value="rtmp://172.16.0.133:1935/live"/>
+        <param name="fps" value="30"/>
+        <param name="publish_topic" value="rtmp_streamping/raw"/>
     </node>
 
 </launch>

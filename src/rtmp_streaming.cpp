@@ -22,18 +22,18 @@ int main(int argc, char **argv){
     cv::VideoCapture cap;
     
     std::string rtmp_address;
-    pnh.getParam("rtmp_address", rtmp_address);
+    std::string publish_topic;
+    int fps;
 
-    std::cout << "rtmp_address: " << rtmp_address << std::endl;
+    pnh.getParam("rtmp_address", rtmp_address);
+    pnh.getParam("publish_topic", publish_topic);
+    pnh.getParam("fps", fps);
 
     image_transport::ImageTransport it(nh);
-    image_transport::Publisher image_pub = it.advertise("rtmp_streamping/raw",1);
+    image_transport::Publisher image_pub = it.advertise(publish_topic,1);
 
-    ROS_INFO("print");
-    ROS_INFO("Got param: %s", rtmp_address.c_str());
-    // cap.open(rtmp_address); //For rtmp streaming purpose.
     cap.open(rtmp_address,cv::CAP_ANY);
-    cap.set(cv::CAP_PROP_FPS,30);
+    cap.set(cv::CAP_PROP_FPS,int(fps));
 
     if(!cap.isOpened()){
         std::cerr << "ERROR! Unable to open camera \n" << std::endl;
@@ -41,6 +41,7 @@ int main(int argc, char **argv){
     }
 
     ros::Rate loop_rate(100);
+    ROS_INFO("Start Streaming");
 
     while(cap.isOpened()){
 
@@ -53,7 +54,6 @@ int main(int argc, char **argv){
 
         ros::spinOnce();
         loop_rate.sleep();
-
     }
 
     cap.release();
